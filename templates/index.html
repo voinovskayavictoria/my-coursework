@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner v2.0 | Главная</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        :root {
+            --page-bg: #1a1e29;
+            --page-text: #e2e8f0;
+            --card-bg: rgba(255,255,255,0.03);
+            --card-border: rgba(255,255,255,0.05);
+            --soft-bg: #252a36;
+            --soft-hover: #2f3545;
+            --sidebar-bg: rgba(26,30,41,0.8);
+            --main-bg: #13151c;
+            --header-bg: rgba(19,21,28,0.85);
+            --muted: #94a3b8;
+        }
+        body.theme-light {
+            --page-bg: #f8fafc;
+            --page-text: #0f172a;
+            --card-bg: rgba(15,23,42,0.04);
+            --card-border: rgba(15,23,42,0.08);
+            --soft-bg: #e2e8f0;
+            --soft-hover: #cbd5f5;
+            --sidebar-bg: #f1f5f9;
+            --main-bg: #f8fafc;
+            --header-bg: #f8fafc;
+            --muted: #475569;
+        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--page-bg); color: var(--page-text) !important; }
+        aside { background: var(--sidebar-bg) !important; border-color: var(--card-border) !important; }
+        main { background: var(--main-bg) !important; }
+        header { background: var(--header-bg) !important; border-color: var(--card-border) !important; }
+        .glass-card { background: var(--card-bg); border: 1px solid var(--card-border); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18); transition: background-color 0.2s ease, border-color 0.2s ease; }
+        .glass-card:hover { background: rgba(255,255,255,0.04); border-color: rgba(34,211,238,0.2); }
+        .soft-btn { background: var(--soft-bg); border: 1px solid var(--card-border); transition: background-color 0.2s ease, border-color 0.2s ease; }
+        .soft-btn:hover { background: var(--soft-hover); }
+        .active-neon { background: rgba(34,211,238,0.1); color: #22d3ee; border: 1px solid rgba(34,211,238,0.3); }
+        .sidebar-item { color: var(--muted); transition: all 0.2s; }
+        .sidebar-item:hover:not(.active-neon) { color: white; background: rgba(255,255,255,0.02); }
+        .gradient-text { background: linear-gradient(135deg, #22d3ee 0%, #818cf8 100%); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #cbd5e1; font-weight: 500; }
+        .form-group input, .form-group textarea { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; padding: 12px 16px; color: white; }
+        .btn { background: #2dd4bf; color: black; font-weight: bold; padding: 10px 20px; border-radius: 2rem; transition: 0.2s; }
+        .btn:hover { background: #14b8a6; }
+        .tab-btn { transition: all 0.2s; }
+        .modal-tab-btn.active-neon { background: rgba(34,211,238,0.2); color: #22d3ee; }
+        .theme-toggle { background: var(--soft-bg); border: 1px solid var(--card-border); color: inherit; padding: 10px 16px; border-radius: 1.25rem; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: background-color 0.2s ease, border-color 0.2s ease; }
+        .theme-toggle:hover { background: var(--soft-hover); }
+        .theme-light .text-white { color: #0f172a !important; }
+        .theme-light .text-slate-200,
+        .theme-light .text-slate-300,
+        .theme-light .text-slate-400,
+        .theme-light .text-slate-500,
+        .theme-light .text-slate-600,
+        .theme-light .text-slate-700 { color: #475569 !important; }
+        i[class^="fa"], i[class*=" fa-"] { display: inline-flex; align-items: center; justify-content: center; width: 1em; line-height: 1; flex-shrink: 0; transform: none !important; }
+    </style>
+</head>
+<body class="text-slate-200">
+
+<div class="flex min-h-screen md:h-screen overflow-hidden">
+    <aside class="hidden md:flex w-64 bg-[#1a1e29]/80 border-r border-white/5 flex-col">
+        <div class="p-6 mb-6 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-cyan-500 rounded-2xl flex items-center justify-center text-black font-black text-2xl">S</div>
+                <span class="text-xl font-bold text-white"><span class="text-cyan-500">Scanner</span></span>
+            </div>
+        </div>
+        <nav class="flex-1 px-4 space-y-2">
+            <a href="/" class="sidebar-item active-neon flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-medium"><i class="fas fa-th-large text-lg"></i><span>Сканирование</span></a>
+            <a href="#" onclick="openModal()" class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-medium"><i class="fas fa-plus-circle text-lg"></i><span>Новый запуск</span></a>
+            {% if current_user %}
+            <a href="/history" class="sidebar-item flex items-center gap-4 px-4 py-3 rounded-2xl text-sm font-medium"><i class="fas fa-history text-lg"></i><span>История</span></a>
+            {% endif %}
+        </nav>
+        <div class="p-5 border-t border-white/5 space-y-3">
+            <div class="flex items-center gap-3 px-2 py-3 bg-black/20 rounded-2xl border border-white/5">
+                <div class="w-8 h-8 rounded-xl bg-slate-700 flex items-center justify-center text-xs font-bold">{{ (current_user.username[:2] if current_user else 'GU')|upper }}</div>
+                <div>
+                    <p class="text-xs font-semibold text-white">{{ current_user.username if current_user else 'Гость' }}</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                {% if current_user %}
+                <a href="/logout" class="soft-btn flex-1 text-center text-white text-xs font-semibold py-2 rounded-xl">Выйти</a>
+                {% else %}
+                <a href="/auth?mode=login" class="soft-btn flex-1 text-center text-white text-xs font-semibold py-2 rounded-xl">Войти</a>
+                <a href="/auth?mode=register" class="soft-btn flex-1 text-center text-white text-xs font-semibold py-2 rounded-xl">Регистрация</a>
+                {% endif %}
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col overflow-hidden bg-[#13151c]">
+        <header class="min-h-[5rem] flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-5 sm:px-8 border-b border-white/5 bg-[#13151c]/85 py-4 md:py-0">
+            <div>
+                <h2 class="text-xl sm:text-2xl font-bold text-white">Консоль управления</h2>
+                <p class="text-sm text-slate-500">Автоматический аудит веб-ресурсов</p>
+            {% if current_user %}
+                <p class="text-xs text-cyan-400 mt-1">Вы вошли как: {{ current_user.username }}</p>
+            {% endif %}
+            </div>
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+                <button id="theme-toggle" type="button" class="theme-toggle text-sm"><i class="fas fa-sun text-cyan-500 text-xs"></i><span>Светлая</span></button>
+                <button onclick="openModal()" class="soft-btn text-white font-bold px-7 py-3 rounded-2xl text-sm flex items-center justify-center gap-3 w-full sm:w-auto">
+                    <i class="fas fa-play text-cyan-500 text-xs"></i><span>Начать проверку</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="md:hidden px-5 sm:px-8 pt-4">
+            <div class="glass-card rounded-2xl p-2 flex flex-wrap gap-2">
+                <a href="/" class="flex-1 text-center px-3 py-2 rounded-xl text-sm font-semibold active-neon">Сканирование</a>
+                <button onclick="openModal()" type="button" class="flex-1 soft-btn px-3 py-2 rounded-xl text-sm font-semibold text-white">Новый запуск</button>
+                {% if current_user %}
+                <a href="/history" class="flex-1 text-center soft-btn px-3 py-2 rounded-xl text-sm font-semibold text-white">История</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-auto p-5 sm:p-8 lg:p-10 space-y-8 sm:space-y-10">
+            {% if current_user %}
+            <!-- Статистика -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+                <div class="md:col-span-2 glass-card rounded-3xl p-8">
+                    <div class="flex items-start justify-between gap-4">
+                        <p class="text-slate-400 text-sm">Всего ваших проверок</p>
+                        <button type="button" onclick="sortRecentScans('all')" class="w-9 h-9 rounded-full bg-white/5 border border-white/5 text-slate-400 hover:text-white hover:border-cyan-400/30 hover:bg-cyan-400/10 transition-all flex items-center justify-center" title="Сбросить сортировку">
+                            <i class="fas fa-rotate-left text-xs"></i>
+                        </button>
+                    </div>
+                    <h3 id="history-count" class="text-7xl font-extrabold mt-5 gradient-text">{{ history_count | default(0) }}</h3>
+                </div>
+                <button type="button" onclick="sortRecentScans('critical')" data-sort-button="critical" class="glass-card rounded-3xl p-6 text-center transition-all hover:border-red-500/30 focus:outline-none focus:ring-2 focus:ring-red-500/20">
+                    <div class="w-14 h-14 rounded-2xl bg-red-500/5 flex items-center justify-center text-red-500 mb-5 mx-auto"><i class="fas fa-biohazard text-2xl"></i></div><p class="text-slate-500 text-xs uppercase font-bold">Критический уровень</p><p id="critical-count" class="text-4xl font-bold mt-2 text-red-500">{{ total_critical | default(0) }}</p>
+                </button>
+                <button type="button" onclick="sortRecentScans('high')" data-sort-button="high" class="glass-card rounded-3xl p-6 text-center transition-all hover:border-orange-500/30 focus:outline-none focus:ring-2 focus:ring-orange-500/20">
+                    <div class="w-14 h-14 rounded-2xl bg-orange-500/5 flex items-center justify-center text-orange-500 mb-5 mx-auto"><i class="fas fa-exclamation-triangle text-2xl"></i></div><p class="text-slate-500 text-xs uppercase font-bold">Высокий уровень</p><p id="high-count" class="text-4xl font-bold mt-2 text-orange-500">{{ total_high | default(0) }}</p>
+                </button>
+            </div>
+
+            <!-- Журнал -->
+                <div class="glass-card rounded-3xl p-6 sm:p-8">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 sm:mb-8">
+                        <h3 class="text-xl font-bold text-white">Ваши проверки</h3>
+                        <a href="/history" class="text-cyan-400 hover:text-white text-sm">Смотреть все →</a>
+                    </div>
+                <div id="recent-scans" class="space-y-3">
+                {% if recent_scans_view %}
+                    {% for scan in recent_scans_view %}
+                    {% if not current_user or scan.user_id == current_user.id %}
+                    <a href="/scan/{{ scan.id }}" class="flex flex-col sm:flex-row sm:items-center p-5 rounded-2xl bg-white/[0.01] border border-white/[0.03] hover:bg-white/[0.03] transition-all group gap-4 sm:gap-0" data-critical-count="{{ scan.critical_count | default(0) }}" data-high-count="{{ scan.high_count | default(0) }}">
+                        <div class="w-12 h-12 rounded-xl bg-[#252a36] flex items-center justify-center text-xl text-cyan-400"><i class="fas fa-globe-americas"></i></div>
+                        <div class="flex-1 sm:ml-5">
+                            <h4 class="font-bold text-white text-sm">{{ scan.target or 'Неизвестно' }}</h4>
+                            <p class="text-xs text-slate-500 mt-0.5" data-created-at="{{ scan.created_at_iso }}">{{ scan.created_at_text }}</p>
+                        </div>
+                        <div class="flex gap-6 sm:gap-10 sm:px-8">
+                            <div class="text-center"><span class="block text-red-500 font-bold text-lg">{{ scan.critical_count }}</span><span class="text-[10px] text-slate-600">Критический</span></div>
+                            <div class="text-center sm:border-l sm:border-white/5 sm:pl-8"><span class="block text-orange-500 font-bold text-lg">{{ scan.high_count }}</span><span class="text-[10px] text-slate-600">Высокий</span></div>
+                        </div>
+                        <i class="fas fa-chevron-right text-slate-700 group-hover:text-cyan-400 sm:ml-4"></i>
+                    </a>
+                    {% endif %}
+                    {% endfor %}
+                {% else %}
+                <div class="text-center py-20"><i class="fas fa-box-open text-5xl text-slate-700 mb-5"></i><p class="text-slate-500">Пока нет сохраненных проверок.</p></div>
+                {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="glass-card rounded-3xl p-8 sm:p-12 text-center max-w-3xl mx-auto mt-8">
+                <div class="w-16 h-16 rounded-2xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center mx-auto mb-5"><i class="fas fa-user-lock text-2xl"></i></div>
+                <h3 class="text-2xl font-bold text-white">Главная страница</h3>
+                <p class="text-slate-500 mt-3">Чтобы видеть свои проверки, войдите в аккаунт.</p>
+                <div class="flex justify-center gap-3 mt-6">
+                    <a href="/auth?mode=login" class="soft-btn px-6 py-3 rounded-2xl text-white font-semibold">Войти</a>
+                    <a href="/auth?mode=register" class="soft-btn px-6 py-3 rounded-2xl text-white font-semibold">Регистрация</a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+
+<!-- Модальное окно с тремя вкладками -->
+<div id="scanModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-4">
+    <div class="glass-card rounded-[2.5rem] w-full max-w-xl p-6 transform scale-95 transition-transform duration-200" style="backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
+        <div class="flex justify-between items-center mb-6">
+            <div><h3 class="text-2xl font-bold text-white">Запуск анализа</h3><p class="text-sm text-slate-500 mt-1">Выберите источник</p></div>
+            <button onclick="closeModal()" class="soft-btn w-10 h-10 rounded-full flex items-center justify-center"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="grid grid-cols-3 gap-2 p-1 bg-black/20 rounded-2xl mb-6 border border-white/5">
+            <button onclick="switchModalTab(0)" class="modal-tab-btn py-2.5 rounded-xl text-sm font-semibold transition-all" data-tab="0">URL</button>
+            <button onclick="switchModalTab(1)" class="modal-tab-btn py-2.5 rounded-xl text-sm font-semibold transition-all" data-tab="1">HTML/Код</button>
+            <button onclick="switchModalTab(2)" class="modal-tab-btn py-2.5 rounded-xl text-sm font-semibold transition-all" data-tab="2">Архив</button>
+        </div>
+        <!-- Вкладка 0: URL -->
+        <div id="modal-tab-0" class="modal-tab-content">
+            <div class="form-group"><label>Введите URL для проверки:</label><input type="url" id="url-input" placeholder="https://example.com" onkeypress="if(event.key==='Enter') startScanFromModal()"></div>
+        </div>
+        <!-- Вкладка 1: HTML/код -->
+        <div id="modal-tab-1" class="modal-tab-content hidden">
+            <div class="form-group"><label>Вставьте HTML/JS код для анализа:</label><textarea id="code-input" rows="8" placeholder="<html>..." onkeypress="if(event.ctrlKey && event.key==='Enter') startScanFromModal()"></textarea></div>
+        </div>
+        <!-- Вкладка 2: Архив -->
+        <div id="modal-tab-2" class="modal-tab-content hidden">
+            <div class="form-group"><label>Загрузите архив проекта (.zip):</label><input type="file" id="archive-file" accept=".zip"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-4 mt-6 mb-2">
+            <div id="depth-container" class="form-group mb-0 hidden">
+                <label>Глубина для ZIP-архива</label>
+                <input type="number" id="max-depth-input" min="0" max="6" value="3" placeholder="3" onkeypress="if(event.key==='Enter') startScanFromModal()">
+                <p class="mt-2 text-xs text-slate-500 leading-relaxed">
+                    Глубина — сколько уровней подпапок просматривать. Максимум: 6.
+                </p>
+            </div>
+            <div id="rules-container" class="form-group mb-0 col-span-2">
+                <label>Правила через запятую</label>
+                <input type="text" id="rules-input" placeholder="Использование eval, Слабый CSP" onkeypress="if(event.key==='Enter') startScanFromModal()">
+            </div>
+        </div>
+        <button onclick="startScanFromModal()" class="mt-6 w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 py-3 rounded-2xl font-bold text-white transition-all">Начать сканирование</button>
+    </div>
+</div>
+
+<script>
+    window.addEventListener('pageshow', async (event) => {
+        sortRecentScans(currentSortMode);
+        if (event.persisted) {
+            try { await refreshHomeSummary(); } catch (e) {}
+        }
+    });
+
+    (function initTheme() {
+        const storageKey = 'scan-theme';
+        const body = document.body;
+        const button = document.getElementById('theme-toggle');
+        const applyLabel = () => {
+            if (!button) return;
+            const isLight = body.classList.contains('theme-light');
+            button.innerHTML = isLight
+                ? '<i class="fas fa-moon text-cyan-500 text-xs"></i><span>Темная</span>'
+                : '<i class="fas fa-sun text-cyan-500 text-xs"></i><span>Светлая</span>';
+        };
+        const stored = localStorage.getItem(storageKey);
+        if (stored === 'light') body.classList.add('theme-light');
+        applyLabel();
+        if (button) {
+            button.addEventListener('click', () => {
+                body.classList.toggle('theme-light');
+                localStorage.setItem(storageKey, body.classList.contains('theme-light') ? 'light' : 'dark');
+                applyLabel();
+            });
+        }
+    }());
+
+    let currentSortMode = 'all';
+
+    function getScanSortValue(card, mode) {
+        const value = parseInt(card.getAttribute(`data-${mode}-count`) || '0', 10);
+        return Number.isFinite(value) ? value : 0;
+    }
+
+    function highlightSortButtons(mode) {
+        document.querySelectorAll('[data-sort-button]').forEach(button => {
+            const buttonMode = button.getAttribute('data-sort-button');
+            const active = buttonMode === mode;
+            button.classList.toggle('ring-2', active);
+            button.classList.toggle('ring-offset-2', active);
+            button.classList.toggle('ring-red-500/30', active && mode === 'critical');
+            button.classList.toggle('ring-orange-500/30', active && mode === 'high');
+        });
+    }
+
+    function sortRecentScans(mode = 'all') {
+        currentSortMode = mode;
+        const container = document.getElementById('recent-scans');
+        if (!container) return;
+
+        const cards = Array.from(container.querySelectorAll('a'));
+        if (!cards.length) {
+            highlightSortButtons(mode);
+            return;
+        }
+
+        if (mode === 'all') {
+            cards.sort((left, right) => {
+                const leftTime = left.querySelector('[data-created-at]')?.getAttribute('data-created-at') || '';
+                const rightTime = right.querySelector('[data-created-at]')?.getAttribute('data-created-at') || '';
+                return rightTime.localeCompare(leftTime);
+            });
+        } else {
+            cards.sort((left, right) => {
+                const rightValue = getScanSortValue(right, mode);
+                const leftValue = getScanSortValue(left, mode);
+                if (rightValue !== leftValue) return rightValue - leftValue;
+
+                const leftTime = left.querySelector('[data-created-at]')?.getAttribute('data-created-at') || '';
+                const rightTime = right.querySelector('[data-created-at]')?.getAttribute('data-created-at') || '';
+                return rightTime.localeCompare(leftTime);
+            });
+        }
+
+        cards.forEach(card => container.appendChild(card));
+        highlightSortButtons(mode);
+    }
+
+    async function refreshHomeSummary() {
+        const response = await fetch('/api/me/summary', { cache: 'no-store', credentials: 'same-origin' });
+        if (!response.ok) return;
+        const data = await response.json();
+
+        const historyCount = document.getElementById('history-count');
+        const criticalCount = document.getElementById('critical-count');
+        const highCount = document.getElementById('high-count');
+        const recentScans = document.getElementById('recent-scans');
+
+        if (historyCount) historyCount.textContent = data.history_count ?? 0;
+        if (criticalCount) criticalCount.textContent = data.total_critical ?? 0;
+        if (highCount) highCount.textContent = data.total_high ?? 0;
+
+        if (recentScans && Array.isArray(data.recent_scans)) {
+            if (!data.recent_scans.length) {
+                recentScans.innerHTML = '<div class="text-center py-20"><i class="fas fa-box-open text-5xl text-slate-700 mb-5"></i><p class="text-slate-500">Пока нет сохраненных проверок.</p></div>';
+                return;
+            }
+
+            recentScans.innerHTML = data.recent_scans.map(scan => `
+                <a href="/scan/${scan.id}" class="flex flex-col sm:flex-row sm:items-center p-5 rounded-2xl bg-white/[0.01] border border-white/[0.03] hover:bg-white/[0.03] transition-all group gap-4 sm:gap-0" data-critical-count="${scan.critical_count ?? 0}" data-high-count="${scan.high_count ?? 0}">
+                    <div class="w-12 h-12 rounded-xl bg-[#252a36] flex items-center justify-center text-xl text-cyan-400"><i class="fas fa-globe-americas"></i></div>
+                    <div class="flex-1 sm:ml-5"><h4 class="font-bold text-white text-sm">${scan.target || 'Неизвестно'}</h4><p class="text-xs text-slate-500 mt-0.5" data-created-at="${scan.created_at || ''}">${scan.created_at_text || scan.created_at || ''}</p></div>
+                    <div class="flex gap-6 sm:gap-10 sm:px-8"><div class="text-center"><span class="block text-red-500 font-bold text-lg">${scan.critical_count ?? 0}</span><span class="text-[10px] text-slate-600">Критический</span></div><div class="text-center sm:border-l sm:border-white/5 sm:pl-8"><span class="block text-orange-500 font-bold text-lg">${scan.high_count ?? 0}</span><span class="text-[10px] text-slate-600">Высокий</span></div></div>
+                    <i class="fas fa-chevron-right text-slate-700 group-hover:text-cyan-400 sm:ml-4"></i>
+                </a>
+            `).join('');
+            sortRecentScans(currentSortMode);
+        }
+    }
+
+
+    let currentModalTab = 0;
+
+    function openModal() {
+        const modal = document.getElementById('scanModal');
+        modal.classList.remove('hidden');
+        setTimeout(() => modal.querySelector('.glass-card').classList.remove('scale-95'), 10);
+        switchModalTab(0);
+    }
+    function closeModal() {
+        const modal = document.getElementById('scanModal');
+        modal.querySelector('.glass-card').classList.add('scale-95');
+        setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+    function switchModalTab(tab) {
+        currentModalTab = tab;
+        document.querySelectorAll('.modal-tab-content').forEach(el => el.classList.add('hidden'));
+        document.getElementById(`modal-tab-${tab}`).classList.remove('hidden');
+        const depthContainer = document.getElementById('depth-container');
+        const rulesContainer = document.getElementById('rules-container');
+        if (tab === 2) {
+            depthContainer.classList.remove('hidden');
+            rulesContainer.classList.remove('md:col-span-2');
+            rulesContainer.classList.remove('col-span-2');
+        } else {
+            depthContainer.classList.add('hidden');
+            rulesContainer.classList.add('col-span-2');
+        }
+        document.querySelectorAll('.modal-tab-btn').forEach((btn, i) => {
+            const btnTab = parseInt(btn.getAttribute('data-tab'));
+            if (btnTab === tab) {
+                btn.classList.add('active-neon', 'text-cyan-400');
+                btn.classList.remove('text-slate-500');
+            } else {
+                btn.classList.remove('active-neon', 'text-cyan-400');
+                btn.classList.add('text-slate-500');
+            }
+        });
+    }
+
+    async function parseResponse(response) {
+        const text = await response.text();
+        let data = {};
+        try {
+            data = text ? JSON.parse(text) : {};
+        } catch (e) {
+            data = {};
+        }
+        return { data, text };
+    }
+
+    async function startScanFromModal() {
+        const maxDepthRaw = document.getElementById('max-depth-input').value.trim();
+        const rulesRaw = document.getElementById('rules-input').value.trim();
+        const options = {};
+        if (maxDepthRaw !== '') options.max_depth = parseInt(maxDepthRaw, 10);
+        if (rulesRaw) options.rules = rulesRaw.split(',').map(item => item.trim()).filter(Boolean);
+        const loaderDiv = document.createElement('div');
+        loaderDiv.innerHTML = `<div class="fixed inset-0 bg-black/90 flex items-center justify-center z-[60]"><div class="text-center"><div class="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div><p class="text-lg font-bold gradient-text uppercase">Анализ...</p></div></div>`;
+        document.body.appendChild(loaderDiv.firstElementChild);
+        try {
+            if (currentModalTab === 0) {
+                const url = document.getElementById('url-input').value.trim();
+                if (!url) throw new Error("Введите URL");
+                const response = await fetch('/api/scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ target: url, options })
+                });
+                const { data, text } = await parseResponse(response);
+                if (!response.ok) throw new Error(data.error || data.detail || text || "Ошибка сервера");
+                window.location.href = `/scan/${data.scan_id}`;
+            }
+            else if (currentModalTab === 1) {
+                const code = document.getElementById('code-input').value.trim();
+                if (!code) throw new Error("Введите HTML/JS код");
+                const response = await fetch('/api/scan/html', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ html_code: code, options })
+                });
+                const { data, text } = await parseResponse(response);
+                if (!response.ok) throw new Error(data.error || data.detail || text || "Ошибка сервера");
+                window.location.href = `/scan/${data.scan_id}`;
+            }
+            else if (currentModalTab === 2) {
+                const fileInput = document.getElementById('archive-file');
+                if (!fileInput.files.length) throw new Error("Выберите zip-архив");
+                const formData = new FormData();
+                formData.append('archive', fileInput.files[0]);
+                formData.append('analysis_options', JSON.stringify(options));
+                const response = await fetch('/api/scan/archive', {
+                    method: 'POST',
+                    body: formData
+                });
+                const { data, text } = await parseResponse(response);
+                if (!response.ok) throw new Error(data.error || data.detail || text || "Ошибка сервера");
+                window.location.href = `/scan/${data.scan_id}`;
+            }
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            const l = document.querySelector('.fixed.inset-0.z-\\[60\\]');
+            if (l) l.remove();
+            closeModal();
+        }
+    }
+
+    // ─── Animations ────────────────────────────────────────────
+    (function () {
+        const st = document.createElement('style');
+        st.textContent = `
+            @keyframes _fu { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+            @keyframes _fi { from { opacity:0; } to { opacity:1; } }
+        `;
+        document.head.appendChild(st);
+
+        // Fade-up stagger for sidebar and main glass-cards (exclude modal)
+        document.querySelectorAll('main .glass-card, aside').forEach((el, i) => {
+            el.style.animation = `_fu .55s cubic-bezier(.22,1,.36,1) ${.03 + i * .09}s both`;
+        });
+
+        // Stagger stat buttons (critical / high)
+        document.querySelectorAll('[data-sort-button]').forEach((el, i) => {
+            el.style.animation = `_fu .5s cubic-bezier(.22,1,.36,1) ${.12 + i * .08}s both`;
+        });
+
+        // Stagger recent scan rows
+        document.querySelectorAll('#recent-scans a').forEach((el, i) => {
+            el.style.animation = `_fu .4s cubic-bezier(.22,1,.36,1) ${.25 + i * .05}s both`;
+        });
+
+        // Counter animation for big numbers
+        function countTo(el, n) {
+            if (!el || n <= 0) return;
+            const dur = 800, t0 = performance.now();
+            (function tick(t) {
+                const p = Math.min((t - t0) / dur, 1);
+                el.textContent = Math.round((1 - Math.pow(1 - p, 3)) * n);
+                if (p < 1) requestAnimationFrame(tick);
+            }(t0));
+        }
+        ['history-count', 'critical-count', 'high-count'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) countTo(el, parseInt(el.textContent) || 0);
+        });
+    }());
+</script>
+</body>
+</html>

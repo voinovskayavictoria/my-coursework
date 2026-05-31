@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>История запусков</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        :root {
+            --page-bg: #13151c;
+            --page-text: #e2e8f0;
+            --card-bg: rgba(255,255,255,0.02);
+            --card-border: rgba(255,255,255,0.05);
+            --muted: #94a3b8;
+            --soft-bg: #252a36;
+            --soft-hover: #2f3545;
+        }
+        body.theme-light {
+            --page-bg: #f8fafc;
+            --page-text: #0f172a;
+            --card-bg: rgba(15,23,42,0.04);
+            --card-border: rgba(15,23,42,0.08);
+            --muted: #475569;
+            --soft-bg: #e2e8f0;
+            --soft-hover: #cbd5f5;
+        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--page-bg); color: var(--page-text) !important; min-height: 100vh; }
+        .glass-card { background: var(--card-bg); border: 1px solid var(--card-border); backdrop-filter: blur(8px); }
+        .scan-row { content-visibility: auto; contain: layout style paint; }
+        .theme-toggle { background: var(--soft-bg); border: 1px solid var(--card-border); color: inherit; padding: 10px 16px; border-radius: 1.25rem; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: background-color 0.2s ease, border-color 0.2s ease; }
+        .theme-toggle:hover { background: var(--soft-hover); }
+        .theme-light .text-white { color: #0f172a !important; }
+        .theme-light .text-slate-200,
+        .theme-light .text-slate-300,
+        .theme-light .text-slate-400,
+        .theme-light .text-slate-500,
+        .theme-light .text-slate-600,
+        .theme-light .text-slate-700 { color: #475569 !important; }
+        i[class^="fa"], i[class*=" fa-"] { display: inline-flex; align-items: center; justify-content: center; width: 1em; line-height: 1; flex-shrink: 0; }
+    </style>
+</head>
+<body class="p-4 sm:p-6 md:p-10">
+    <div class="max-w-7xl mx-auto space-y-6 sm:space-y-8">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+                <a href="/" class="text-sm text-slate-500 hover:text-cyan-400 transition-colors flex items-center gap-2"><i class="fas fa-chevron-left text-[10px]"></i> На главную страницу</a>
+                <h1 class="text-3xl sm:text-4xl font-extrabold mt-3">История запусков</h1>
+                <p class="text-slate-500 mt-2">Показывает только сохраненные сканирования.</p>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
+                <button id="theme-toggle" type="button" class="theme-toggle text-sm"><i class="fas fa-sun text-cyan-500 text-xs"></i><span>Светлая</span></button>
+                <div class="glass-card rounded-2xl px-5 py-4 flex items-center gap-3 w-full sm:w-auto">
+                    <div class="w-10 h-10 rounded-xl bg-cyan-500 text-black flex items-center justify-center font-black">{{ (current_user.username[:2] if current_user else 'GU')|upper }}</div>
+                    <div>
+                        <p class="text-sm font-semibold">{{ current_user.username if current_user else 'Гость' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-card rounded-[2rem] p-6 md:p-8">
+            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-6">
+                <div>
+                    <h2 class="text-xl font-bold">Найдено запусков: {{ total_scans }}</h2>
+                    {% if q %}<p class="text-sm text-slate-500 mt-1">Поиск по названию: «{{ q }}»</p>{% endif %}
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <form method="get" action="/history" class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                        <input name="q" value="{{ q or '' }}" type="text" placeholder="Поиск по названию" class="w-full sm:w-72 max-w-full rounded-2xl bg-black/30 border border-white/10 px-4 py-3 outline-none focus:border-cyan-500 text-white">
+                        <select name="sort" class="w-full sm:w-auto rounded-2xl bg-black/30 border border-white/10 px-4 py-3 outline-none focus:border-cyan-500 text-white">
+                            <option value="date_new" {% if sort == "date_new" %}selected{% endif %}>По дате (новые)</option>
+                            <option value="date_old" {% if sort == "date_old" %}selected{% endif %}>По дате (старые)</option>
+                            <option value="name_az" {% if sort == "name_az" %}selected{% endif %}>По названию (A-Z)</option>
+                            <option value="name_za" {% if sort == "name_za" %}selected{% endif %}>По названию (Z-A)</option>
+                            <option value="critical_high" {% if sort == "critical_high" %}selected{% endif %}>Критических (больше)</option>
+                            <option value="critical_low" {% if sort == "critical_low" %}selected{% endif %}>Критических (меньше)</option>
+                            <option value="total_high" {% if sort == "total_high" %}selected{% endif %}>Ошибок (больше)</option>
+                            <option value="total_low" {% if sort == "total_low" %}selected{% endif %}>Ошибок (меньше)</option>
+                        </select>
+                        <button type="submit" class="w-full sm:w-auto px-5 py-3 rounded-2xl bg-cyan-500 text-black font-bold hover:bg-cyan-400 transition-colors">Искать</button>
+                    </form>
+                    <form method="post" action="/history/clear" onsubmit="return confirm('Очистить всю историю?');">
+                        <button type="submit" class="w-full sm:w-auto px-5 py-3 rounded-2xl bg-red-500/10 text-red-300 border border-red-500/20 font-semibold hover:bg-red-500/20 transition-colors">Очистить историю</button>
+                    </form>
+                </div>
+            </div>
+
+            {% if scans_view %}
+            <form method="post" action="/history/delete-selected" onsubmit="return confirm('Удалить выбранные проверки?');">
+                <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+                    <label class="flex items-center gap-2 text-sm text-slate-400">
+                        <input type="checkbox" id="select-all-history" class="accent-cyan-500">
+                        Выбрать все на странице
+                    </label>
+                    <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                        <button type="button" id="export-selected-btn" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-sm hover:border-cyan-500/50 hover:bg-cyan-500/20 transition-colors">Экспортировать в JSON</button>
+                        <button type="submit" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm hover:border-orange-500/30 hover:bg-orange-500/10 transition-colors">Удалить выбранные</button>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    {% for scan in scans_view %}
+                    <label class="block scan-row rounded-2xl bg-white/[0.02] border border-white/[0.05] p-4 sm:p-5 hover:border-cyan-500/30 transition-colors cursor-pointer">
+                        <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+                            <input type="checkbox" name="scan_ids" value="{{ scan.id }}" class="mt-2 accent-cyan-500 scan-select-checkbox">
+                            <a href="/scan/{{ scan.id }}" class="flex-1 block w-full">
+                                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                    <div>
+                                        <div class="flex items-center gap-3 flex-wrap">
+                                            <h3 class="font-semibold text-white">{{ scan.target or 'Неизвестно' }}</h3>
+                                            {% if scan.user_id %}<span class="text-[10px] px-2 py-1 rounded-full bg-cyan-500/10 text-cyan-300">user</span>{% endif %}
+                                        </div>
+                                        <p class="text-sm text-slate-500 mt-1" data-created-at="{{ scan.created_at_iso }}">{{ scan.created_at_text }}</p>
+                                    </div>
+                                    <div class="grid grid-cols-2 sm:flex gap-4 sm:gap-6 text-sm">
+                                        <div><span class="block text-red-500 font-bold text-lg">{{ scan.critical_count }}</span><span class="text-slate-500">Критический</span></div>
+                                        <div><span class="block text-orange-500 font-bold text-lg">{{ scan.high_count }}</span><span class="text-slate-500">Высокий</span></div>
+                                        <div><span class="block text-yellow-500 font-bold text-lg">{{ scan.medium_count }}</span><span class="text-slate-500">Средний</span></div>
+                                        <div><span class="block text-emerald-500 font-bold text-lg">{{ scan.low_count }}</span><span class="text-slate-500">Низкий</span></div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+
+                {% if total_pages > 1 %}
+                <div class="flex justify-center items-center gap-2 mt-6">
+                    {% if page > 1 %}
+                    <a href="/history?q={{ q or '' }}&sort={{ sort }}&page=1" class="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm hover:border-cyan-500/30 hover:bg-cyan-500/10 transition-colors">Первая</a>
+                    <a href="/history?q={{ q or '' }}&sort={{ sort }}&page={{ page - 1 }}" class="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm hover:border-cyan-500/30 hover:bg-cyan-500/10 transition-colors">Назад</a>
+                    {% endif %}
+                    <span class="px-3 py-2 text-slate-400">{{ page }} / {{ total_pages }}</span>
+                    {% if page < total_pages %}
+                    <a href="/history?q={{ q or '' }}&sort={{ sort }}&page={{ page + 1 }}" class="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm hover:border-cyan-500/30 hover:bg-cyan-500/10 transition-colors">Далее</a>
+                    <a href="/history?q={{ q or '' }}&sort={{ sort }}&page={{ total_pages }}" class="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm hover:border-cyan-500/30 hover:bg-cyan-500/10 transition-colors">Последняя</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </form>
+            {% else %}
+            <div class="py-20 text-center text-slate-500">
+                <i class="fas fa-folder-open text-5xl mb-4 text-slate-700"></i>
+                <p>Сохраненных сканирований пока нет.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <script>
+        (function initTheme() {
+            const storageKey = 'scan-theme';
+            const body = document.body;
+            const button = document.getElementById('theme-toggle');
+            const applyLabel = () => {
+                if (!button) return;
+                const isLight = body.classList.contains('theme-light');
+                button.innerHTML = isLight
+                    ? '<i class="fas fa-moon text-cyan-500 text-xs"></i><span>Темная</span>'
+                    : '<i class="fas fa-sun text-cyan-500 text-xs"></i><span>Светлая</span>';
+            };
+            const stored = localStorage.getItem(storageKey);
+            if (stored === 'light') body.classList.add('theme-light');
+            applyLabel();
+            if (button) {
+                button.addEventListener('click', () => {
+                    body.classList.toggle('theme-light');
+                    localStorage.setItem(storageKey, body.classList.contains('theme-light') ? 'light' : 'dark');
+                    applyLabel();
+                });
+            }
+        }());
+
+        const selectAllHistory = document.getElementById('select-all-history');
+        if (selectAllHistory) {
+            selectAllHistory.addEventListener('change', () => {
+                document.querySelectorAll('.scan-select-checkbox').forEach(checkbox => {
+                    checkbox.checked = selectAllHistory.checked;
+                });
+            });
+        }
+
+        // Export selected scans
+        const exportBtn = document.getElementById('export-selected-btn');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', async () => {
+                const selected = Array.from(document.querySelectorAll('.scan-select-checkbox:checked')).map(cb => cb.value);
+                if (selected.length === 0) {
+                    alert('Выберите хотя бы один скан для экспорта');
+                    return;
+                }
+
+                try {
+                    exportBtn.disabled = true;
+                    exportBtn.textContent = 'Загрузка...';
+
+                    const resp = await fetch('/api/scans/export-batch', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ scan_ids: selected })
+                    });
+
+                    if (!resp.ok) {
+                        const errData = await resp.json().catch(() => ({}));
+                        throw new Error(errData.error || `HTTP ${resp.status}`);
+                    }
+
+                    const blob = await resp.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `scans-export-${new Date().toISOString().split('T')[0]}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                } catch (e) {
+                    alert('Ошибка при экспорте: ' + e.message);
+                } finally {
+                    exportBtn.disabled = false;
+                    exportBtn.textContent = 'Экспортировать в JSON';
+                }
+            });
+        }
+
+        // ─── Animations ──────────────────────────────────────────
+        (function () {
+            const st = document.createElement('style');
+            st.textContent = '@keyframes _fu { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }';
+            document.head.appendChild(st);
+
+            const hdr = document.querySelector('.max-w-7xl > div:first-child');
+            if (hdr) hdr.style.animation = '_fu .3s ease-out .02s both';
+
+            const card = document.querySelector('.glass-card');
+            if (card) card.style.animation = '_fu .3s ease-out .08s both';
+        }());
+    </script>
+</body>
+</html>

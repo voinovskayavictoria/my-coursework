@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализ безопасности #{{ scan.id }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        :root {
+            --page-bg: #1a1e29;
+            --page-text: #e2e8f0;
+            --card-bg: rgba(255, 255, 255, 0.02);
+            --card-border: rgba(255, 255, 255, 0.05);
+            --soft-bg: #252a36;
+            --soft-hover: #2f3545;
+        }
+        body.theme-light {
+            --page-bg: #f8fafc;
+            --page-text: #0f172a;
+            --card-bg: rgba(15,23,42,0.04);
+            --card-border: rgba(15,23,42,0.08);
+            --soft-bg: #e2e8f0;
+            --soft-hover: #cbd5f5;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--page-bg);
+            background-image: radial-gradient(at 0% 0%, rgba(34, 211, 238, 0.03) 0px, transparent 50%),
+                              radial-gradient(at 100% 100%, rgba(129, 140, 248, 0.03) 0px, transparent 50%);
+            color: var(--page-text) !important;
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+        .vuln-card {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+            content-visibility: auto;
+            contain-intrinsic-size: auto 80px;
+        }
+        .vuln-card:hover {
+            border-color: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .severity-ring {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid currentColor;
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #22d3ee 0%, #818cf8 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .theme-toggle { background: var(--soft-bg); border: 1px solid var(--card-border); color: inherit; padding: 10px 16px; border-radius: 1.25rem; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: background-color 0.2s ease, border-color 0.2s ease; }
+        .theme-toggle:hover { background: var(--soft-hover); }
+        .theme-light .text-white { color: #0f172a !important; }
+        .theme-light .text-slate-200,
+        .theme-light .text-slate-300,
+        .theme-light .text-slate-400,
+        .theme-light .text-slate-500,
+        .theme-light .text-slate-600,
+        .theme-light .text-slate-700 { color: #475569 !important; }
+        i[class^="fa"], i[class*=" fa-"] { display: inline-flex; align-items: center; justify-content: center; width: 1em; line-height: 1; flex-shrink: 0; transform: none !important; }
+    </style>
+</head>
+<body class="p-4 sm:p-6 md:p-12">
+
+<div class="max-w-6xl mx-auto">
+    <div class="mb-8 sm:mb-10 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
+        <div class="space-y-2">
+            <a href="/" class="text-slate-500 hover:text-cyan-400 transition-colors text-sm flex items-center gap-2">
+                <i class="fas fa-chevron-left text-[10px]"></i> Вернуться на главную страницу
+            </a>
+            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">Отчет <span class="gradient-text">{{ scan.target or 'Анализ' }}</span></h1>
+            <p class="text-slate-500 font-medium">ID: {{ scan.id }} • <span data-created-at="{{ scan_view.created_at_iso }}">{{ scan_view.created_at_text }}</span></p>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <button id="theme-toggle" type="button" class="theme-toggle text-sm"><i class="fas fa-sun text-cyan-500 text-xs"></i><span>Светлая</span></button>
+            <button id="html-code-button" type="button" data-scan-id="{{ scan.id }}"
+                    class="glass-card px-6 py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:border-cyan-500/30 transition-all w-full sm:w-auto">
+                <i class="fas fa-code text-slate-500"></i> HTML-код
+            </button>
+            <a href="/scan/{{ scan.id }}/download" 
+               class="glass-card px-6 py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:border-cyan-500/30 transition-all w-full sm:w-auto">
+                <i class="fas fa-download text-slate-500"></i> Скачать JSON
+            </a>
+        </div>
+    </div>
+
+    <!-- Статистика по всем уровням -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10 sm:mb-12">
+        <div class="glass-card rounded-[2rem] p-5 sm:p-6 text-center">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-red-500/60 mb-1">Критический</p>
+            <div class="text-4xl font-bold text-red-500">{{ scan.critical_count or 0 }}</div>
+        </div>
+        <div class="glass-card rounded-[2rem] p-5 sm:p-6 text-center">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-orange-500/60 mb-1">Высокий</p>
+            <div class="text-4xl font-bold text-orange-500">{{ scan.high_count or 0 }}</div>
+        </div>
+        <div class="glass-card rounded-[2rem] p-5 sm:p-6 text-center">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-yellow-500/60 mb-1">Средний</p>
+            <div class="text-4xl font-bold text-yellow-500">{{ scan.medium_count or 0 }}</div>
+        </div>
+        <div class="glass-card rounded-[2rem] p-5 sm:p-6 text-center">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-500/60 mb-1">Низкий</p>
+            <div class="text-4xl font-bold text-emerald-500">{{ scan.low_count or 0 }}</div>
+        </div>
+    </div>
+
+    <div id="html-code-card" class="glass-card rounded-[2rem] p-6 mb-10 hidden">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-white">HTML-код страницы</h3>
+            <button id="html-code-close" type="button" class="text-sm text-slate-400 hover:text-cyan-400">Скрыть</button>
+        </div>
+        <p id="html-code-status" class="text-sm text-slate-500 mb-4"></p>
+        <pre id="html-code-pre" class="text-xs text-slate-200 whitespace-pre-wrap break-words bg-black/20 border border-white/5 rounded-2xl p-4 max-h-[520px] overflow-auto"></pre>
+    </div>
+
+    <!-- Список уязвимостей -->
+    <div class="space-y-4">
+        <div class="flex items-center justify-between px-2 mb-6">
+            <h3 class="text-xl font-bold text-white">Выявленные уязвимости ({{ vulnerabilities|length }})</h3>
+        </div>
+
+        {% for vuln in vulnerabilities %}
+        <div class="vuln-card rounded-[2.5rem] overflow-hidden">
+            <div onclick="toggleVuln(this)" class="px-5 sm:px-8 py-5 sm:py-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 cursor-pointer group">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+                    <div class="flex items-center gap-3 min-w-0 sm:min-w-[140px]">
+                        <span class="severity-ring 
+                            {% if vuln.severity|lower == 'critical' %}text-red-500
+                            {% elif vuln.severity|lower == 'high' %}text-orange-500
+                            {% elif vuln.severity|lower == 'medium' %}text-yellow-500
+                            {% else %}text-emerald-500{% endif %}"></span>
+                        <span class="text-[10px] font-black uppercase tracking-tighter text-slate-500">
+                            {% if vuln.severity|lower == 'critical' %}КРИТИЧЕСКИЙ
+                            {% elif vuln.severity|lower == 'high' %}ВЫСОКИЙ
+                            {% elif vuln.severity|lower == 'medium' %}СРЕДНИЙ
+                            {% else %}НИЗКИЙ{% endif %}
+                        </span>
+                    </div>
+                    <span class="text-lg font-bold text-slate-200 group-hover:text-white transition-colors">{{ vuln.name }}</span>
+                </div>
+                <i class="fas fa-plus text-sm rotate-icon"></i>
+            </div>
+            <div class="hidden px-5 sm:px-8 pb-8 sm:pb-10">
+                <div class="pt-6 sm:pt-8 border-t border-white/5 grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-10">
+                    <div class="lg:col-span-2 space-y-6 sm:space-y-8">
+                        {% if vuln.code_snippet %}
+                        <div>
+                            <h4 class="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-400/50 mb-3">Строка с ошибкой</h4>
+                            <pre class="text-xs text-slate-200 whitespace-pre-wrap break-words bg-black/20 border border-white/5 rounded-2xl p-4">{{ vuln.code_snippet }}</pre>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <h4 class="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-400/50 mb-3">Описание</h4>
+                            <p class="text-slate-300 leading-relaxed text-sm">{{ vuln.description }}</p>
+                        </div>
+                    </div>
+                    <div class="space-y-6">
+                        <div class="ai-badge p-6 rounded-[2rem]" style="background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.05);">
+                            <div class="flex items-center gap-2 mb-4">
+                                <i class="fas fa-robot text-xs text-cyan-400"></i>
+                                <h4 class="text-[10px] font-bold uppercase tracking-[0.1em] text-cyan-400/70">Рекомендация</h4>
+                            </div>
+                            <p class="text-sm text-slate-300 leading-relaxed italic">
+                                {{ vuln.recommendation or 'Обновите библиотеку/компонент до актуальной версии.' }}
+                            </p>
+                        </div>
+                        {% if vuln.advisory_url %}
+                        <div class="px-2">
+                            <a href="{{ vuln.advisory_url }}" target="_blank" 
+                               class="text-cyan-400 hover:text-cyan-300 text-sm flex items-center gap-2">
+                                <i class="fas fa-external-link-alt"></i> Подробнее в базе NVD
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="glass-card rounded-[3rem] py-32 text-center">
+            <div class="w-24 h-24 bg-emerald-500/5 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500/10 text-emerald-500">
+                <i class="fas fa-shield-alt text-4xl"></i>
+            </div>
+            <h4 class="text-2xl font-bold">Уязвимостей не найдено</h4>
+            <p class="text-slate-500 mt-2">По текущей базе данных проблем не обнаружено.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    (function initTheme() {
+        const storageKey = 'scan-theme';
+        const body = document.body;
+        const button = document.getElementById('theme-toggle');
+        const applyLabel = () => {
+            if (!button) return;
+            const isLight = body.classList.contains('theme-light');
+            button.innerHTML = isLight
+                ? '<i class="fas fa-moon text-cyan-500 text-xs"></i><span>Темная</span>'
+                : '<i class="fas fa-sun text-cyan-500 text-xs"></i><span>Светлая</span>';
+        };
+        const stored = localStorage.getItem(storageKey);
+        if (stored === 'light') body.classList.add('theme-light');
+        applyLabel();
+        if (button) {
+            button.addEventListener('click', () => {
+                body.classList.toggle('theme-light');
+                localStorage.setItem(storageKey, body.classList.contains('theme-light') ? 'light' : 'dark');
+                applyLabel();
+            });
+        }
+    }());
+
+    (function initHtmlCode() {
+        const button = document.getElementById('html-code-button');
+        const closeButton = document.getElementById('html-code-close');
+        const card = document.getElementById('html-code-card');
+        const pre = document.getElementById('html-code-pre');
+        const status = document.getElementById('html-code-status');
+        if (!button || !card || !pre || !status) return;
+
+        let loaded = false;
+        const showCard = async () => {
+            card.classList.remove('hidden');
+            if (loaded) return;
+
+            status.textContent = 'Загрузка...';
+            pre.textContent = '';
+            const scanId = button.dataset.scanId;
+            try {
+                const response = await fetch(`/api/scan/${scanId}/view-code`);
+                const payload = await response.json().catch(() => null);
+                if (!response.ok) {
+                    const message = payload?.error || payload?.detail;
+                    status.textContent = message || 'Не удалось загрузить HTML-код.';
+                    return;
+                }
+                pre.textContent = payload?.html_code || '';
+                status.textContent = payload?.html_code ? '' : 'HTML-код пуст.';
+                loaded = true;
+            } catch (error) {
+                status.textContent = 'Не удалось загрузить HTML-код.';
+            }
+        };
+
+        button.addEventListener('click', () => {
+            if (card.classList.contains('hidden')) {
+                showCard();
+            } else {
+                card.classList.add('hidden');
+            }
+        });
+
+        if (closeButton) {
+            closeButton.addEventListener('click', () => card.classList.add('hidden'));
+        }
+    }());
+
+    function toggleVuln(header) {
+        const card = header.parentElement;
+        const content = header.nextElementSibling;
+        const icon = header.querySelector('.rotate-icon');
+
+        if (content.classList.contains('hidden')) {
+            content.classList.remove('hidden');
+            icon.style.transform = 'rotate(45deg)';
+        } else {
+            content.classList.add('hidden');
+            icon.style.transform = 'rotate(0deg)';
+        }
+    }
+
+    // ─── Animations ────────────────────────────────────────────
+    (function () {
+        const st = document.createElement('style');
+        st.textContent = `
+            @keyframes _fu { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+            @keyframes _pulse { 0%,100% { transform:scale(1); opacity:1; } 50% { transform:scale(1.35); opacity:.6; } }
+        `;
+        document.head.appendChild(st);
+
+        // Fade-up for header + stat boxes
+        const header = document.querySelector('.mb-10');
+        if (header) header.style.animation = '_fu .5s cubic-bezier(.22,1,.36,1) .03s both';
+
+        document.querySelectorAll('.glass-card').forEach((el, i) => {
+            el.style.animation = `_fu .5s cubic-bezier(.22,1,.36,1) ${.08 + i * .07}s both`;
+        });
+
+        // Pulse on critical severity rings
+        document.querySelectorAll('.severity-ring.text-red-500').forEach(el => {
+            el.style.animation = '_pulse 2.2s ease-in-out infinite';
+        });
+
+        // Reveal vuln cards on scroll
+        const cards = document.querySelectorAll('.vuln-card');
+        if (!cards.length) return;
+
+        const io = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (!e.isIntersecting) return;
+                e.target.style.animation = '_fu .45s cubic-bezier(.22,1,.36,1) both';
+                io.unobserve(e.target);
+            });
+        }, { threshold: 0.05 });
+
+        cards.forEach(el => {
+            el.style.opacity = '0';
+            io.observe(el);
+        });
+    }());
+</script>
+</body>
+</html>
