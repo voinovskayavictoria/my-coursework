@@ -98,7 +98,7 @@
                     </label>
                     <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                         <button type="button" id="export-selected-btn" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-sm hover:border-cyan-500/50 hover:bg-cyan-500/20 transition-colors">Экспортировать в JSON</button>
-                        <button type="submit" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm hover:border-orange-500/30 hover:bg-orange-500/10 transition-colors">Удалить выбранные</button>
+                        <button type="submit" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm hover:border-orange-500/30 hover:bg-orange-500/10 transition-colors">Удалить выбранное</button>
                     </div>
                 </div>
 
@@ -184,7 +184,6 @@
             });
         }
 
-        // Export selected scans
         const exportBtn = document.getElementById('export-selected-btn');
         if (exportBtn) {
             exportBtn.addEventListener('click', async () => {
@@ -227,7 +226,6 @@
             });
         }
 
-        // ─── Animations ──────────────────────────────────────────
         (function () {
             const st = document.createElement('style');
             st.textContent = '@keyframes _fu { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }';

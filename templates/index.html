@@ -129,7 +129,6 @@
 
         <div class="flex-1 overflow-auto p-5 sm:p-8 lg:p-10 space-y-8 sm:space-y-10">
             {% if current_user %}
-            <!-- Статистика -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
                 <div class="md:col-span-2 glass-card rounded-3xl p-8">
                     <div class="flex items-start justify-between gap-4">
@@ -148,7 +147,6 @@
                 </button>
             </div>
 
-            <!-- Журнал -->
                 <div class="glass-card rounded-3xl p-6 sm:p-8">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 sm:mb-8">
                         <h3 class="text-xl font-bold text-white">Ваши проверки</h3>
@@ -192,7 +190,6 @@
     </main>
 </div>
 
-<!-- Модальное окно с тремя вкладками -->
 <div id="scanModal" class="hidden fixed inset-0 bg-black/85 flex items-center justify-center z-50 p-4">
     <div class="glass-card rounded-[2.5rem] w-full max-w-xl p-6 transform scale-95 transition-transform duration-200" style="backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
         <div class="flex justify-between items-center mb-6">
@@ -204,15 +201,12 @@
             <button onclick="switchModalTab(1)" class="modal-tab-btn py-2.5 rounded-xl text-sm font-semibold transition-all" data-tab="1">HTML/Код</button>
             <button onclick="switchModalTab(2)" class="modal-tab-btn py-2.5 rounded-xl text-sm font-semibold transition-all" data-tab="2">Архив</button>
         </div>
-        <!-- Вкладка 0: URL -->
         <div id="modal-tab-0" class="modal-tab-content">
             <div class="form-group"><label>Введите URL для проверки:</label><input type="url" id="url-input" placeholder="https://example.com" onkeypress="if(event.key==='Enter') startScanFromModal()"></div>
         </div>
-        <!-- Вкладка 1: HTML/код -->
         <div id="modal-tab-1" class="modal-tab-content hidden">
             <div class="form-group"><label>Вставьте HTML/JS код для анализа:</label><textarea id="code-input" rows="8" placeholder="<html>..." onkeypress="if(event.ctrlKey && event.key==='Enter') startScanFromModal()"></textarea></div>
         </div>
-        <!-- Вкладка 2: Архив -->
         <div id="modal-tab-2" class="modal-tab-content hidden">
             <div class="form-group"><label>Загрузите архив проекта (.zip):</label><input type="file" id="archive-file" accept=".zip"></div>
         </div>
@@ -455,7 +449,6 @@
         }
     }
 
-    // ─── Animations ────────────────────────────────────────────
     (function () {
         const st = document.createElement('style');
         st.textContent = `
@@ -464,22 +457,18 @@
         `;
         document.head.appendChild(st);
 
-        // Fade-up stagger for sidebar and main glass-cards (exclude modal)
         document.querySelectorAll('main .glass-card, aside').forEach((el, i) => {
             el.style.animation = `_fu .55s cubic-bezier(.22,1,.36,1) ${.03 + i * .09}s both`;
         });
 
-        // Stagger stat buttons (critical / high)
         document.querySelectorAll('[data-sort-button]').forEach((el, i) => {
             el.style.animation = `_fu .5s cubic-bezier(.22,1,.36,1) ${.12 + i * .08}s both`;
         });
 
-        // Stagger recent scan rows
         document.querySelectorAll('#recent-scans a').forEach((el, i) => {
             el.style.animation = `_fu .4s cubic-bezier(.22,1,.36,1) ${.25 + i * .05}s both`;
         });
 
-        // Counter animation for big numbers
         function countTo(el, n) {
             if (!el || n <= 0) return;
             const dur = 800, t0 = performance.now();

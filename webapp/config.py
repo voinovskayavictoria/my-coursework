@@ -1,5 +1,5 @@
-MAX_ARCHIVE_SIZE_BYTES = 50 * 1024 * 1024
-MAX_ARCHIVE_MEMBERS = 2000
-MAX_HTML_SIZE_BYTES = 1 * 1024 * 1024
-MAX_ARCHIVE_DEPTH = 6
-AUTH_COOKIE_NAME = "scan_user_id"
+MAX_ARCHIVE_SIZE_BYTES = 50 * 1024 * 1024 # Максимальный размер загружаемого ZIP-архива (50 мегабайт)
+MAX_ARCHIVE_MEMBERS = 2000 # Максимальное количество файлов внутри архива (2000 штук)
+MAX_HTML_SIZE_BYTES = 1 * 1024 * 1024 # Максимальный размер HTML-файла при сканировании (1 мегабайт)
+MAX_ARCHIVE_DEPTH = 6 # Максимальная глубина рекурсивного обхода папок в архиве (6 уровней)
+AUTH_COOKIE_NAME = "scan_user_id" # Имя cookie-файла для хранения идентификатора авторизованного пользователя

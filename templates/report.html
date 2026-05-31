@@ -98,7 +98,6 @@
         </div>
     </div>
 
-    <!-- Статистика по всем уровням -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10 sm:mb-12">
         <div class="glass-card rounded-[2rem] p-5 sm:p-6 text-center">
             <p class="text-[10px] font-bold uppercase tracking-widest text-red-500/60 mb-1">Критический</p>
@@ -127,7 +126,6 @@
         <pre id="html-code-pre" class="text-xs text-slate-200 whitespace-pre-wrap break-words bg-black/20 border border-white/5 rounded-2xl p-4 max-h-[520px] overflow-auto"></pre>
     </div>
 
-    <!-- Список уязвимостей -->
     <div class="space-y-4">
         <div class="flex items-center justify-between px-2 mb-6">
             <h3 class="text-xl font-bold text-white">Выявленные уязвимости ({{ vulnerabilities|length }})</h3>
@@ -285,7 +283,6 @@
         }
     }
 
-    // ─── Animations ────────────────────────────────────────────
     (function () {
         const st = document.createElement('style');
         st.textContent = `
@@ -294,7 +291,6 @@
         `;
         document.head.appendChild(st);
 
-        // Fade-up for header + stat boxes
         const header = document.querySelector('.mb-10');
         if (header) header.style.animation = '_fu .5s cubic-bezier(.22,1,.36,1) .03s both';
 
@@ -302,12 +298,10 @@
             el.style.animation = `_fu .5s cubic-bezier(.22,1,.36,1) ${.08 + i * .07}s both`;
         });
 
-        // Pulse on critical severity rings
         document.querySelectorAll('.severity-ring.text-red-500').forEach(el => {
             el.style.animation = '_pulse 2.2s ease-in-out infinite';
         });
 
-        // Reveal vuln cards on scroll
         const cards = document.querySelectorAll('.vuln-card');
         if (!cards.length) return;
 

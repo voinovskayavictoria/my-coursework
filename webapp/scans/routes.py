@@ -10,7 +10,7 @@ import httpx
 from fastapi import APIRouter, Request, HTTPException, UploadFile, File, Form
 from fastapi.responses import JSONResponse, StreamingResponse
 
-from models import Scan, SessionLocal
+from models import Scan, SessionLocal, User
 from security_scanner import analyze_response_security_headers
 from webapp.auth import current_user_id
 from webapp.config import MAX_ARCHIVE_SIZE_BYTES
@@ -235,9 +235,12 @@ async def export_batch_scans(request: Request):
         db = SessionLocal()
         try:
             exported_scans = []
+            user_obj = None
+            if user_id:
+                user_obj = db.query(User).filter(User.id == user_id).first()
 
             for scan_id in scan_ids:
-                payload = get_scan_bundle(db, scan_id, user_id, session_id=session_id)
+                payload = get_scan_bundle(db, scan_id, user_obj, session_id=session_id)
                 if payload:
                     exported_scans.append({
                         "scan": {

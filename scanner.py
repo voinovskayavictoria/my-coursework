@@ -1,4 +1,16 @@
-# scanner.py
+"""
+Модуль для поиска уязвимостей в сторонних библиотеках через OSV.dev API.
+
+Функции:
+- VulnerabilityScanner.search_by_product_version() — отправляет запрос к OSV.dev,
+  проверяет указанную версию пакета на наличие известных уязвимостей,
+  возвращает список CVE/GHSA с оценками severity и ссылками.
+- extract_lib_and_version() — извлекает из URL название библиотеки и её версию
+  (используется для парсинга script-тегов в HTML).
+
+OSV.dev агрегирует данные из NVD, GitHub Advisory Database (Microsoft),
+PyPI, npm и других источников. API работает без токена, но с ограничением частоты.
+"""
 import requests
 import re
 from typing import List, Dict, Any

@@ -1,30 +1,15 @@
-<#
-Run helper for the project on Windows (PowerShell).
-
-Usage:
-  .\run.ps1            # start server on default port 8000
-  .\run.ps1 -Port 8001 # start on port 8001
-  .\run.ps1 -Install   # install requirements before starting
-
-What it does:
-  - checks whether the specified port is in use
-  - if a process listens on that port it attempts to kill it
-  - activates the local venv (./.venv)
-  - optionally installs requirements
-  - starts the server using the venv python
-#>
 
 param(
     [int]$Port = 8000,
     [switch]$Install
 )
 
+# Функция: получить PID процесса, который слушает указанный порт
 function Get-PidForPort([int]$port) {
     $lines = netstat -aon | findstr ":$port"
     if (-not $lines) { return $null }
     foreach ($ln in $lines) {
         $parts = $ln -split '\s+' | Where-Object { $_ -ne '' }
-        # PID is last column
         $pid = $parts[-1]
         if ($pid -match '^[0-9]+$') { return [int]$pid }
     }
@@ -48,7 +33,7 @@ if ($targetPid) {
     }
 }
 
-# Activate venv if it exists
+# Активация виртуального окружения, если оно существует
 $venvActivate = Join-Path $PSScriptRoot ".venv\Scripts\Activate.ps1"
 $pythonExe = Join-Path $PSScriptRoot ".venv\Scripts\python.exe"
 if (Test-Path $venvActivate) {
@@ -58,6 +43,7 @@ if (Test-Path $venvActivate) {
     Write-Host "[run.ps1] Warning: venv Activate.ps1 not found at $venvActivate" -ForegroundColor Yellow
 }
 
+# Установка зависимостей, если указан флаг -Install
 if ($Install) {
     $req = Join-Path $PSScriptRoot "requirements.txt"
     if (Test-Path $req) {

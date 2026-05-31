@@ -41,24 +41,23 @@ def enrich_cve(cve_id: str) -> dict:
     if not cve_id:
         return {}
 
+# Проверка хэша
     cached = _get_cache('nvd', cve_id)
     if cached:
         return cached
 
     try:
-        # nvdlib provides a query function to get CVE details
+        # nvdlib предоставляет функцию для поиска CVE по идентификатору
         cve = nvdlib.searchCVE(cveId=cve_id)
-        # cve is a list; take first
         if not cve:
             result = {}
         else:
             item = cve[0]
-            # description: nvdlib CVE object exposes 'descriptions' or 'descriptions' list
+            # Извлекаем описание уязвимости
             description = ''
             try:
                 descs = getattr(item, 'descriptions', None) or getattr(item, 'descriptions', None)
                 if descs:
-                    # descs may be list of dicts or objects
                     first = descs[0]
                     if isinstance(first, dict):
                         description = first.get('value', '')
@@ -67,14 +66,14 @@ def enrich_cve(cve_id: str) -> dict:
             except Exception:
                 description = ''
 
-            # cvss v3 score
+           # Извлекаем CVSS-оценку (версия 3)
             score = None
             try:
                 score = getattr(item, 'v31score', None) or getattr(item, 'v3score', None) or getattr(item, 'score', None)
             except Exception:
                 score = None
 
-            # references
+            # Извлекаем ссылку на advisory (описание уязвимости на NVD)
             advisory_url = None
             try:
                 refs = getattr(item, 'references', None)

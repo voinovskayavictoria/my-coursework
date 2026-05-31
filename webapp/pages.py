@@ -1,3 +1,4 @@
+# Маршруты веб-страниц: главная панель с дашбордом, история сканирований с фильтрацией, просмотр отчётов и экспорт в JSON.
 import json
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import HTMLResponse, Response, RedirectResponse
@@ -149,8 +150,14 @@ async def delete_selected_history(request: Request):
         return RedirectResponse(url="/auth?mode=login", status_code=303)
 
     form = await request.form()
-    selected_ids = [str(value) for value in form.getlist("scan_ids") if str(value).strip()]
+    raw_selected = form.getlist("scan_ids") or []
+    selected_ids = [str(v).strip() for v in raw_selected if str(v).strip()]
     if not selected_ids:
+        return RedirectResponse(url="/history", status_code=303)
+
+    # Basic validation: ensure values look like ids (avoid treating a single string as iterable)
+    valid_ids = [s for s in selected_ids if isinstance(s, str) and len(s) > 6]
+    if not valid_ids:
         return RedirectResponse(url="/history", status_code=303)
 
     db = SessionLocal()
@@ -158,7 +165,7 @@ async def delete_selected_history(request: Request):
         owned_scan_ids = [
             row[0]
             for row in db.query(Scan.id)
-            .filter(Scan.user_id == current_user.id, Scan.id.in_(selected_ids))
+            .filter(Scan.user_id == current_user.id, Scan.id.in_(valid_ids))
             .all()
         ]
         if owned_scan_ids:
