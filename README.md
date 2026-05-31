@@ -23,14 +23,6 @@
 * Python 3.11+
 * pip
 
-## Установка
-
-```bash
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
-```
-
 ## Как запустить
 
 1. Клонируйте репозиторий:
