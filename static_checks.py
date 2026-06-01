@@ -46,11 +46,10 @@ def find_inline_vulnerabilities(html_code: str) -> list:
     if script_pattern.search(html_code):
         snippet = _snippet_for_regex(html_code, script_pattern) or _snippet_for_substring(html_code, "<script")
         vulnerabilities.append({
-            'name': 'Inline script',
-            'rule': 'Inline script',
-            'description': 'Inline script detected (<script>...</script> without a src attribute). This can be an XSS vector.',
+            'name': 'Inline-скрипт',
+            'rule': 'Inline-скрипт',
+            'description': 'Обнаружен инлайн-скрипт (<script>...</script> без атрибута src). Это может быть вектором для XSS.',
             'severity': 'medium',
-            'recommendation': 'Move JavaScript to external files and configure Content-Security-Policy.',
             'code_snippet': snippet,
         })
 
@@ -59,11 +58,10 @@ def find_inline_vulnerabilities(html_code: str) -> list:
     if handlers_pattern.search(html_code):
         snippet = _snippet_for_regex(html_code, handlers_pattern)
         vulnerabilities.append({
-            'name': 'Inline event handlers',
-            'rule': 'Inline event handlers',
-            'description': 'Inline event handlers detected (onclick, onload, etc.). They increase XSS risk.',
+            'name': 'Inline-обработчики событий',
+            'rule': 'Inline-обработчики событий',
+            'description': 'Найдены inline-обработчики событий (onclick, onload и др.). Они увеличивают риск XSS.',
             'severity': 'medium',
-            'recommendation': 'Use addEventListener in JavaScript instead of inline attributes.',
             'code_snippet': snippet,
         })
 
@@ -76,7 +74,6 @@ def find_inline_vulnerabilities(html_code: str) -> list:
             'rule': 'JavaScript URI в ссылке',
             'description': 'Обнаружен href="javascript:...", что может привести к XSS при клике.',
             'severity': 'high',
-            'recommendation': 'Не используйте javascript: в href. Замените на обработчик события.',
             'code_snippet': snippet,
         })
 
@@ -89,7 +86,6 @@ def find_inline_vulnerabilities(html_code: str) -> list:
             'rule': 'Использование eval()',
             'description': 'Функция eval() может выполнить произвольный код и является опасной.',
             'severity': 'critical',
-            'recommendation': 'Избегайте eval. Используйте безопасные альтернативы.',
             'code_snippet': snippet,
         })
 
@@ -102,7 +98,6 @@ def find_inline_vulnerabilities(html_code: str) -> list:
             'rule': 'Использование document.write()',
             'description': 'document.write() может быть использован для динамической вставки кода, что опасно.',
             'severity': 'high',
-            'recommendation': 'Используйте textContent или createElement вместо document.write.',
             'code_snippet': snippet,
         })
 
@@ -115,7 +110,6 @@ def find_inline_vulnerabilities(html_code: str) -> list:
             'rule': 'Смешанный контент',
             'description': 'Обнаружены ресурсы, загружаемые по HTTP. На HTTPS странице это небезопасно.',
             'severity': 'high',
-            'recommendation': 'Замените http:// на https:// или используйте относительные пути.',
             'code_snippet': snippet,
         })
 
@@ -128,7 +122,6 @@ def find_inline_vulnerabilities(html_code: str) -> list:
             'rule': 'Прямое присваивание innerHTML',
             'description': 'Найдено прямое присваивание innerHTML, что опасно при вставке пользовательских данных.',
             'severity': 'high',
-            'recommendation': 'Используйте textContent или предварительную санацию HTML перед вставкой.',
             'code_snippet': snippet,
         })
 
@@ -141,7 +134,6 @@ def find_inline_vulnerabilities(html_code: str) -> list:
             'rule': 'Уязвимый DOM API',
             'description': 'Найден потенциально опасный DOM-паттерн, который может привести к XSS.',
             'severity': 'high',
-            'recommendation': 'Проверьте источник данных и по возможности замените на безопасный рендеринг.',
             'code_snippet': snippet,
         })
 
@@ -154,7 +146,6 @@ def find_inline_vulnerabilities(html_code: str) -> list:
             'rule': 'Секрет в HTML/JS',
             'description': 'Похоже, найдено значение, похожее на ключ, токен или пароль в HTML/JS-коде.',
             'severity': 'high',
-            'recommendation': 'Вынесите секреты в переменные окружения или защищённое хранилище.',
             'code_snippet': snippet,
         })
 

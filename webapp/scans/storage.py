@@ -175,10 +175,16 @@ def apply_rule_filter(vulnerabilities: list[dict], enabled_rules: set[str] | Non
 
 
 def enrich_and_save(db: Session, scan_id: str, vulnerabilities: list[dict]) -> None:
-    enriched_vulnerabilities = enrich_findings_with_llm(vulnerabilities) if vulnerabilities else []
+    if not vulnerabilities:
+        save_vulnerabilities(db, scan_id, [])
+        return
+    enriched_vulnerabilities = enrich_findings_with_llm(vulnerabilities)
     save_vulnerabilities(db, scan_id, enriched_vulnerabilities)
 
 
 def enrich_transient_scan(scan_id: str, target: str, session_id: str | None, vulnerabilities: list[dict]) -> None:
-    enriched_vulnerabilities = enrich_findings_with_llm(vulnerabilities) if vulnerabilities else []
+    if not vulnerabilities:
+        store_transient_scan(scan_id, target, session_id, [])
+        return
+    enriched_vulnerabilities = enrich_findings_with_llm(vulnerabilities)
     store_transient_scan(scan_id, target, session_id, enriched_vulnerabilities)
