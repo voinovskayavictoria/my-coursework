@@ -40,18 +40,17 @@ def find_inline_vulnerabilities(html_code: str) -> list:
         name, description, severity, recommendation.
     """
     vulnerabilities = []
-    html_lower = html_code.lower()
 
     # 1. Инлайн-скрипты (<script>...</script> без src)
-    if '<script>' in html_lower and 'src=' not in html_lower:
-        script_pattern = re.compile(r"<script(?![^>]*\bsrc=)[^>]*>", re.IGNORECASE)
+    script_pattern = re.compile(r"<script(?![^>]*\bsrc=)[^>]*>", re.IGNORECASE)
+    if script_pattern.search(html_code):
         snippet = _snippet_for_regex(html_code, script_pattern) or _snippet_for_substring(html_code, "<script")
         vulnerabilities.append({
-            'name': 'Инлайн-скрипт',
-            'rule': 'Инлайн-скрипт',
-            'description': 'Обнаружен инлайн-скрипт (<script>...</script> без атрибута src). Это может быть вектором для XSS.',
+            'name': 'Inline script',
+            'rule': 'Inline script',
+            'description': 'Inline script detected (<script>...</script> without a src attribute). This can be an XSS vector.',
             'severity': 'medium',
-            'recommendation': 'Вынесите JavaScript во внешние файлы и настройте Content-Security-Policy.',
+            'recommendation': 'Move JavaScript to external files and configure Content-Security-Policy.',
             'code_snippet': snippet,
         })
 
@@ -60,11 +59,11 @@ def find_inline_vulnerabilities(html_code: str) -> list:
     if handlers_pattern.search(html_code):
         snippet = _snippet_for_regex(html_code, handlers_pattern)
         vulnerabilities.append({
-            'name': 'Inline-обработчики событий',
-            'rule': 'Inline-обработчики событий',
-            'description': 'Найдены inline-обработчики событий (onclick, onload и др.). Они увеличивают риск XSS.',
+            'name': 'Inline event handlers',
+            'rule': 'Inline event handlers',
+            'description': 'Inline event handlers detected (onclick, onload, etc.). They increase XSS risk.',
             'severity': 'medium',
-            'recommendation': 'Используйте addEventListener в JavaScript вместо inline-атрибутов.',
+            'recommendation': 'Use addEventListener in JavaScript instead of inline attributes.',
             'code_snippet': snippet,
         })
 
@@ -117,6 +116,45 @@ def find_inline_vulnerabilities(html_code: str) -> list:
             'description': 'Обнаружены ресурсы, загружаемые по HTTP. На HTTPS странице это небезопасно.',
             'severity': 'high',
             'recommendation': 'Замените http:// на https:// или используйте относительные пути.',
+            'code_snippet': snippet,
+        })
+
+    # 7. Прямое присваивание innerHTML
+    inner_html_pattern = re.compile(r"\.innerHTML\s*=", re.IGNORECASE)
+    if inner_html_pattern.search(html_code):
+        snippet = _snippet_for_regex(html_code, inner_html_pattern)
+        vulnerabilities.append({
+            'name': 'Прямое присваивание innerHTML',
+            'rule': 'Прямое присваивание innerHTML',
+            'description': 'Найдено прямое присваивание innerHTML, что опасно при вставке пользовательских данных.',
+            'severity': 'high',
+            'recommendation': 'Используйте textContent или предварительную санацию HTML перед вставкой.',
+            'code_snippet': snippet,
+        })
+
+    # 8. Уязвимый DOM API
+    dom_api_pattern = re.compile(r"dangerouslySetInnerHTML|insertAdjacentHTML", re.IGNORECASE)
+    if dom_api_pattern.search(html_code):
+        snippet = _snippet_for_regex(html_code, dom_api_pattern)
+        vulnerabilities.append({
+            'name': 'Уязвимый DOM API',
+            'rule': 'Уязвимый DOM API',
+            'description': 'Найден потенциально опасный DOM-паттерн, который может привести к XSS.',
+            'severity': 'high',
+            'recommendation': 'Проверьте источник данных и по возможности замените на безопасный рендеринг.',
+            'code_snippet': snippet,
+        })
+
+    # 9. Секреты в HTML/JS
+    secret_pattern = re.compile(r"(api[_-]?key|secret|token|password)\s*[:=]\s*[\"'`][^\"'`\n]{8,}[\"'`]", re.IGNORECASE)
+    if secret_pattern.search(html_code):
+        snippet = _snippet_for_regex(html_code, secret_pattern)
+        vulnerabilities.append({
+            'name': 'Секрет в HTML/JS',
+            'rule': 'Секрет в HTML/JS',
+            'description': 'Похоже, найдено значение, похожее на ключ, токен или пароль в HTML/JS-коде.',
+            'severity': 'high',
+            'recommendation': 'Вынесите секреты в переменные окружения или защищённое хранилище.',
             'code_snippet': snippet,
         })
 

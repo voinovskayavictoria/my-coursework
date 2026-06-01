@@ -46,12 +46,19 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-5. Запустите сервер:
+5. Установите и подключите локальную LLM (Ollama):
+Скачайте и установите Ollama с https://ollama.com/download, затем убедитесь, что команда `ollama` доступна в терминале.
+```
+ollama serve
+ollama pull llama3.1:8b-instruct
+```
+
+6. Запустите сервер:
 ```
 python app.py
 ```
 
-6. Откройте в браузере:
+7. Откройте в браузере:
 ```
 http://127.0.0.1:8000
 ```
@@ -85,4 +92,3 @@ http://127.0.0.1:8000
 - `requirements.txt` — список зависимостей (библиотеки Python для установки через `pip`).
 - `run.ps1` — PowerShell-скрипт для быстрого запуска сервера.
 - `README.md` — документация проекта.
-- `scans.db` — файл базы данных SQLite.
